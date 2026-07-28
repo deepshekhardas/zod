@@ -1653,6 +1653,7 @@ export interface $ZodAnyDef extends $ZodTypeDef {
 export interface $ZodAnyInternals extends $ZodTypeInternals<any, any> {
   def: $ZodAnyDef;
   isst: never;
+  optin: "optional";
 }
 
 export interface $ZodAny extends $ZodType {
@@ -1680,6 +1681,7 @@ export interface $ZodUnknownDef extends $ZodTypeDef {
 export interface $ZodUnknownInternals extends $ZodTypeInternals<unknown, unknown> {
   def: $ZodUnknownDef;
   isst: never;
+  optin: "optional";
 }
 
 export interface $ZodUnknown extends $ZodType {
