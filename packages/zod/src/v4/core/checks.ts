@@ -82,7 +82,7 @@ export const $ZodCheckLessThan: core.$constructor<$ZodCheckLessThan> = /*@__PURE
       }
 
       payload.issues.push({
-        origin,
+        origin: numericOriginMap[typeof payload.value as "number" | "bigint" | "object"] ?? origin,
         code: "too_big",
         maximum: typeof def.value === "object" ? def.value.getTime() : def.value,
         input: payload.value,
@@ -133,7 +133,7 @@ export const $ZodCheckGreaterThan: core.$constructor<$ZodCheckGreaterThan> = /*@
       }
 
       payload.issues.push({
-        origin,
+        origin: numericOriginMap[typeof payload.value as "number" | "bigint" | "object"] ?? origin,
         code: "too_small",
         minimum: typeof def.value === "object" ? def.value.getTime() : def.value,
         input: payload.value,
@@ -623,7 +623,7 @@ export const $ZodCheckMaxLength: core.$constructor<$ZodCheckMaxLength> = /*@__PU
 
     inst._zod.check = (payload) => {
       const input = payload.value;
-      const length = input.length;
+      const length = typeof input === "string" ? util.stringLength(input) : input.length;
 
       if (length <= def.maximum) return;
       const origin = util.getLengthableOrigin(input);
@@ -674,7 +674,7 @@ export const $ZodCheckMinLength: core.$constructor<$ZodCheckMinLength> = /*@__PU
 
     inst._zod.check = (payload) => {
       const input = payload.value;
-      const length = input.length;
+      const length = typeof input === "string" ? util.stringLength(input) : input.length;
 
       if (length >= def.minimum) return;
       const origin = util.getLengthableOrigin(input);
@@ -728,7 +728,7 @@ export const $ZodCheckLengthEquals: core.$constructor<$ZodCheckLengthEquals> = /
 
     inst._zod.check = (payload) => {
       const input = payload.value;
-      const length = input.length;
+      const length = typeof input === "string" ? util.stringLength(input) : input.length;
       if (length === def.length) return;
       const origin = util.getLengthableOrigin(input);
       const tooBig = length > def.length;
@@ -772,6 +772,7 @@ export type $ZodStringFormats =
   | "base64url"
   | "json_string"
   | "e164"
+  | "credit_card"
   | "lowercase"
   | "uppercase"
   | "regex"
