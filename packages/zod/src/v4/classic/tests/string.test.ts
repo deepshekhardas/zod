@@ -345,6 +345,10 @@ test("url validations", () => {
   expect(() => url.parse("https:/")).toThrow();
   expect(() => url.parse("asdfj@lkjsdf.com")).toThrow();
   expect(() => url.parse("https://")).toThrow();
+  // The WHATWG parser deletes ASCII tab/LF/CR, so embedded control chars must be rejected even though the URL constructor succeeds
+  expect(() => url.parse("https://exa\nmple.com")).toThrow();
+  expect(() => url.parse("https://exa\tmple.com")).toThrow();
+  expect(() => url.parse("https://exa\rmple.com")).toThrow();
 });
 
 test("url preserves original input", () => {
@@ -979,6 +983,10 @@ test("IPv6 validation", () => {
   expect(ipv6.safeParse("114.71.82.94").success).toBe(false);
   expect(ipv6.safeParse("not an ip").success).toBe(false);
   expect(ipv6.safeParse("g123::1234:5678").success).toBe(false);
+  // The WHATWG URL parser deletes ASCII tab/LF/CR, so they must be rejected up front
+  expect(ipv6.safeParse("::1\t").success).toBe(false);
+  expect(ipv6.safeParse("::1\n").success).toBe(false);
+  expect(ipv6.safeParse("::1\r").success).toBe(false);
 
   // Test specific error
   expect(() => ipv6.parse("254.164.77.1")).toThrow();
@@ -1081,6 +1089,10 @@ test("CIDR v6 validation", () => {
   expect(cidrV6.safeParse("2001:0db8:85a3::/64/whatever-after").success).toBe(false);
   expect(cidrV6.safeParse("22d9:f4a8:6a90:f3bf:dcaa:2beb:5fba:0000/112").success).toBe(true);
   expect(cidrV6.safeParse("22d9:f4a8:6a90:f3bf:dcaa:2beb:5fba:0000/112/268").success).toBe(false);
+  // The WHATWG parser deletes ASCII tab/LF/CR, so they must be rejected up front
+  expect(cidrV6.safeParse("::1\n/64").success).toBe(false);
+  expect(cidrV6.safeParse("::1\t/64").success).toBe(false);
+  expect(cidrV6.safeParse("::1\r/64").success).toBe(false);
 });
 
 test("E.164 validation", () => {

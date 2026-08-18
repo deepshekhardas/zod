@@ -522,6 +522,9 @@ export function parseValidURL(
 ): string | undefined {
   const trimmed = data.trim();
 
+  // The WHATWG parser deletes ASCII tab/LF/CR from input and succeeds, so reject them up front. Otherwise a string like "https://exa\nmple.com" validates as "https://example.com".
+  if (/[\t\n\r]/.test(trimmed)) return undefined;
+
   // Bare z.url() (no hostname/protocol/normalize options) skips the parsed-URL path entirely. URL.canParse avoids the try/catch on invalid input.
   if (!def.hostname && !def.protocol && !def.normalize) {
     return urlCanParse(trimmed) ? trimmed : undefined;
@@ -574,6 +577,19 @@ export const $ZodURL: core.$constructor<$ZodURL> = /*@__PURE__*/ core.$construct
           });
           return;
         }
+      }
+
+      // The WHATWG parser deletes ASCII tab/LF/CR from input, so a string like "https://exa\nmple.com" would parse as "https://example.com" and validate the wrong host.
+      if (/[\t\n\r]/.test(trimmed)) {
+        payload.issues.push({
+          code: "invalid_format",
+          format: "url",
+          note: "Invalid URL format",
+          input: payload.value,
+          inst,
+          continue: !def.abort,
+        });
+        return;
       }
 
       // @ts-ignore
@@ -877,6 +893,8 @@ export interface $ZodIPv6 extends $ZodType {
 }
 
 export function isValidIPv6(value: string): boolean {
+  // The WHATWG parser deletes ASCII tab/LF/CR from input, so a value like "::1\n" would pass URL parsing despite net.isIPv6() rejecting it.
+  if (/[\t\n\r]/.test(value)) return false;
   try {
     // @ts-ignore
     new URL(`http://[${value}]`);
@@ -962,6 +980,8 @@ export interface $ZodCIDRv6 extends $ZodType {
 }
 
 export function isValidCIDRv6(value: string): boolean {
+  // The WHATWG parser deletes ASCII tab/LF/CR from input, so reject them up front.
+  if (/[\t\n\r]/.test(value)) return false;
   const parts = value.split("/");
   if (parts.length !== 2) return false;
   const [address, prefix] = parts;
