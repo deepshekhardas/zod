@@ -285,3 +285,25 @@ test("duration", () => {
     expect(result.error.issues[0].message).toEqual("Invalid ISO duration");
   }
 });
+
+test("datetime with local never emits an empty alternation branch", () => {
+  for (const params of [
+    { local: true },
+    { local: true, offset: true },
+    { precision: -1, local: true, offset: true },
+  ]) {
+    const datetimeLocal = z.string().datetime(params);
+    const pattern = datetimeLocal._zod.pattern.source;
+    expect(pattern).not.toMatch(/\|\|/);
+    expect(pattern).not.toMatch(/\|\)$/);
+  }
+});
+
+test("datetime with local keeps its parsing semantics", () => {
+  const datetimeLocal = z.string().datetime({ local: true, offset: true });
+  datetimeLocal.parse("1970-01-01T00:00:00Z");
+  datetimeLocal.parse("1970-01-01T00:00:00+02:30");
+  datetimeLocal.parse("1970-01-01T00:00:00");
+  expect(() => datetimeLocal.parse("1970-01-01T00:00:00+02")).toThrow();
+  expect(() => datetimeLocal.parse("1970-01-01T00:00:00+24:00")).toThrow();
+});
