@@ -128,7 +128,7 @@ export interface ToJSONSchemaContext {
    * covers both passes in `finalize`: the ref flattening and the `$defs` build.
    *
    * The passes are valid only while nothing they read has changed, so both are cleared in
-   * `process()` when the map grows, and in `JSONSchemaGenerator.emit()`, which can also change
+   * `processSchema()` when the map grows, and in `JSONSchemaGenerator.emit()`, which can also change
    * the `cycles` and `reused` they branch on.
    *
    * One case is deliberately not covered: an `override` callback that writes to
@@ -203,7 +203,7 @@ export function handleUnrepresentable(
   return true;
 }
 
-export function process<T extends schemas.$ZodType>(
+export function processSchema<T extends schemas.$ZodType>(
   schema: T,
   ctx: ToJSONSchemaContext,
   _params: ProcessParams = { path: [], schemaPath: [] }
@@ -258,7 +258,7 @@ export function process<T extends schemas.$ZodType>(
     if (parent) {
       // Also set ref if processor didn't (for inheritance)
       if (!result.ref) result.ref = parent;
-      process(parent, ctx, params);
+      processSchema(parent, ctx, params);
       ctx.seen.get(parent)!.isParent = true;
     }
   }
@@ -678,7 +678,7 @@ export const createToJSONSchemaMethod =
   <T extends schemas.$ZodType>(schema: T, processors: Record<string, Processor> = {}) =>
   (params?: ToJSONSchemaParams): ZodStandardJSONSchemaPayload<T> => {
     const ctx = initializeContext({ ...params, processors });
-    process(schema, ctx);
+    processSchema(schema, ctx);
     extractDefs(ctx, schema);
     return finalize(ctx, schema);
   };
@@ -693,7 +693,7 @@ export const createStandardJSONSchemaMethod =
   (params?: StandardJSONSchemaMethodParams): JSONSchema.BaseSchema => {
     const { libraryOptions, target } = params ?? {};
     const ctx = initializeContext({ ...(libraryOptions ?? {}), target, io, processors });
-    process(schema, ctx);
+    processSchema(schema, ctx);
     extractDefs(ctx, schema);
     return finalize(ctx, schema);
   };
