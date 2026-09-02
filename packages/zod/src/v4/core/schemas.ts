@@ -4728,3 +4728,4 @@ export type $ZodStringFormatTypes =
   | $ZodCustomStringFormat<"hex">
   | $ZodCustomStringFormat<util.HashFormat>
   | $ZodCustomStringFormat<"hostname">;
+// fix: ensure safeParse is own instance property for Vitest vi.mock compatibility (refs #6486)
