@@ -2384,13 +2384,17 @@ export const $ZodDiscriminatedUnion: core.$constructor<$ZodDiscriminatedUnion> =
     const disc = util.cached(() => {
       const opts = def.options as $ZodTypeDiscriminable[];
       const map: Map<util.Primitive, $ZodType> = new Map();
+      const ambiguous: Set<util.Primitive> = new Set();
       for (const o of opts) {
         const values = o._zod.propValues?.[def.discriminator];
         if (!values || values.size === 0)
           throw new Error(`Invalid discriminated union option at index "${def.options.indexOf(o)}"`);
         for (const v of values) {
+          if (ambiguous.has(v)) continue;
           if (map.has(v)) {
-            throw new Error(`Duplicate discriminator value "${String(v)}"`);
+            map.delete(v);
+            ambiguous.add(v);
+            continue;
           }
           map.set(v, o);
         }
