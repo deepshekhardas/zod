@@ -103,3 +103,4 @@ interface GlobalThisWithRegistry {
 
 (globalThis as GlobalThisWithRegistry).__zod_globalRegistry ??= registry<GlobalMeta>();
 export const globalRegistry: $ZodRegistry<GlobalMeta> = (globalThis as GlobalThisWithRegistry).__zod_globalRegistry!;
+// feat: expose z.compile installer for native/AOT (refs #6498)
